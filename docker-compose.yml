@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tomiris
+      POSTGRES_USER: tomiris
+      POSTGRES_PASSWORD: tomiris
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tomiris -d tomiris"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  hub:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://tomiris:tomiris@postgres:5432/tomiris
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+volumes:
+  postgres_data:
+

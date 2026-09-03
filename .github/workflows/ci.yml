@@ -1,0 +1,32 @@
+name: phase-01-ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: tomiris
+          POSTGRES_USER: tomiris
+          POSTGRES_PASSWORD: tomiris
+        options: >-
+          --health-cmd "pg_isready -U tomiris -d tomiris"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+        ports: ["5432:5432"]
+    env:
+      DATABASE_URL: postgresql+asyncpg://tomiris:tomiris@localhost:5432/tomiris
+      TOMIRIS_HUB_INGEST_KEY_ID: current
+      TOMIRIS_HUB_INGEST_SECRET: 0123456789abcdef0123456789abcdef
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install '.[dev]'
+      - run: python -m alembic upgrade head
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy src
+      - run: pytest -q
+      - run: bandit -q -r src
+

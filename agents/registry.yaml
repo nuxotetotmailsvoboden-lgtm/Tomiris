@@ -1,0 +1,10 @@
+agents:
+  - agent_id: TEST_AGENT_001
+    name: Phase 01 Test Agent
+    role: test_agent
+    enabled: true
+    protocol_version: "1.0"
+    account_alias: local
+    space_name: phase-01-test-agent
+    capabilities:
+      - signal_ingestion
