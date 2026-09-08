@@ -43,7 +43,14 @@ def create_agent_runtime_app(
     task_store: RuntimeTaskStore | None = None,
 ) -> FastAPI:
     active_clock = clock or SystemClock()
-    active_handler = handler or TestAnalysisHandler(active_clock)
+    if handler is not None:
+        active_handler = handler
+    elif settings.tomiris_runtime_mode == "test":
+        active_handler = TestAnalysisHandler(active_clock)
+    else:
+        from tomiris_agent_runtime.analytical import build_analytical_handler
+
+        active_handler = build_analytical_handler(settings, active_clock)
     active_sink = sink or HubSignalSink(
         HubClient(
             settings.tomiris_hub_url,
@@ -69,7 +76,11 @@ def create_agent_runtime_app(
 
     @app.get("/health/ready")
     async def ready() -> dict[str, str]:
-        return {"status": "ready", "agent_id": settings.tomiris_agent_id}
+        return {
+            "status": "ready",
+            "agent_id": settings.tomiris_agent_id,
+            "role_api_version": "1" if settings.tomiris_runtime_mode == "analytical" else "none",
+        }
 
     @app.get("/v1/capabilities")
     async def capabilities() -> RuntimeCapabilities:
@@ -80,6 +91,9 @@ def create_agent_runtime_app(
             capabilities=list(settings.capabilities),
             supported_assets=list(settings.supported_assets),
             protocol_versions=["1.0"],
+            analytical_role_api_version=(
+                "1" if settings.tomiris_runtime_mode == "analytical" else None
+            ),
         )
 
     async def execute(task: AnalysisTaskRequest) -> None:
@@ -105,7 +119,7 @@ def create_agent_runtime_app(
                     "agent_id": task.agent_id,
                     "snapshot_id": str(task.snapshot_id),
                     "correlation_id": str(task.correlation_id),
-                    "reason_code": "TEST_HANDLER_FAILURE",
+                    "reason_code": "AGENT_HANDLER_FAILURE",
                 },
             )
 

@@ -1,0 +1,30 @@
+definition_version: "1"
+agent_id: ETH_TECHNICAL_001
+role_id: eth.technical.v1
+enabled: true
+lifecycle: ACTIVE
+config_version: eth-technical-config.v1
+runtime_contract_version: "1"
+analysis_schema_version: "1"
+supported_assets: [ETHUSDT]
+capabilities: [technical.multi_timeframe]
+required_data:
+  - {instrument: ETHUSDT, timeframe: 1d, minimum_bars: 220, max_data_age_seconds: 172800}
+  - {instrument: ETHUSDT, timeframe: 4h, minimum_bars: 220, max_data_age_seconds: 28800}
+  - {instrument: ETHUSDT, timeframe: 1h, minimum_bars: 220, max_data_age_seconds: 7200}
+  - {instrument: ETHUSDT, timeframe: 15m, minimum_bars: 220, max_data_age_seconds: 1800}
+parameters:
+  pipeline: {ema_fast: 20, ema_slow: 50, rsi_period: 14, macd_fast: 12, macd_slow: 26, macd_signal: 9, atr_period: 14, volatility_period: 20, volume_short_period: 5, volume_long_period: 20, return_lookback: 1}
+  timeframe_weights: {1d: 0.35, 4h: 0.30, 1h: 0.20, 15m: 0.15}
+  neutral_threshold: 0.18
+  strong_trend_threshold: 0.65
+  rsi_bullish: 55
+  rsi_bearish: 45
+  high_atr_percent: 0.045
+  extreme_atr_percent: 0.09
+  high_realized_volatility: 0.035
+  extreme_realized_volatility: 0.08
+  swing_lookback: 10
+limits: {max_evidence_items: 16}
+metadata:
+  purpose: deterministic ETH technical observation; never a trade decision

@@ -26,6 +26,12 @@ receive database credentials.
 | Runtime capability escalation | registry remains authority; handshake only detects drift | registry administration remains privileged |
 | Duplicate work after restart | stable task ID and unique accepted result | handler computation may repeat but cannot create a second accepted result |
 | Late result | Hub rejects `TASK_EXPIRED` and audits rejection | rejection audit lacks accepted signal payload by design |
+| Malformed public market data | strict JSON/OHLCV normalization, byte limits and quality gate | one provider can still publish plausible but incorrect prices |
+| Provider endpoint abuse/SSRF | HTTPS, credential-free origin and Binance host allowlist | DNS/CA/host compromise needs network egress controls |
+| Lookahead/open-candle contamination | explicit UTC cutoff and closed-candle validation | provider timestamp semantics require continued monitoring |
+| Cross-asset contamination | definition, task, request, bundle and role identity checks | bad reviewed configuration can still disable an agent |
+| Analytical code injection via remote text | Phase 03 accepts numeric schema only; no LLM/instruction execution | future text agents need stronger content isolation |
+| Misread confidence as profit probability | versioned deterministic-strength semantics and documentation | downstream consumers must preserve the distinction |
 
-There are deliberately no inbound Telegram commands, exchange credentials, market sources,
-trading decisions or execution functions in this phase.
+There are deliberately no inbound Telegram commands, exchange credentials, private/account market
+sources, trading decisions or execution functions in this phase.

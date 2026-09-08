@@ -15,3 +15,45 @@ agents:
       - test
     metadata:
       purpose: phase-01-system-test
+  - agent_id: BTC_CONTEXT_001
+    name: BTC Market Context Pilot
+    role: btc.market_context.v1
+    enabled: true
+    protocol_version: "1.0"
+    criticality: HIGH
+    account_alias: pilot
+    space_alias: btc-context-001
+    capabilities: [signal_ingestion, market.context, market.technical.basic]
+    supported_assets: [BTCUSDT]
+    supported_evidence_types: [market_context]
+    metadata:
+      config_version: btc-context-config.v1
+      phase: 3
+  - agent_id: ETH_TECHNICAL_001
+    name: ETH Technical Pilot
+    role: eth.technical.v1
+    enabled: true
+    protocol_version: "1.0"
+    criticality: NORMAL
+    account_alias: pilot
+    space_alias: eth-technical-001
+    capabilities: [signal_ingestion, technical.multi_timeframe]
+    supported_assets: [ETHUSDT]
+    supported_evidence_types: [technical_feature]
+    metadata:
+      config_version: eth-technical-config.v1
+      phase: 3
+  - agent_id: SOL_TECHNICAL_001
+    name: SOL Technical Pilot
+    role: sol.technical.v1
+    enabled: true
+    protocol_version: "1.0"
+    criticality: NORMAL
+    account_alias: pilot
+    space_alias: sol-technical-001
+    capabilities: [signal_ingestion, technical.multi_timeframe]
+    supported_assets: [SOLUSDT]
+    supported_evidence_types: [technical_feature]
+    metadata:
+      config_version: sol-technical-config.v1
+      phase: 3

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -19,10 +21,22 @@ class AgentRuntimeSettings(BaseSettings):
     )
     tomiris_orchestrator_command_key_id: str = Field(default="current", min_length=1, max_length=64)
     tomiris_orchestrator_command_secret: SecretStr
-    runtime_version: str = "0.2.0"
+    tomiris_runtime_mode: Literal["test", "analytical"] = "test"
+    tomiris_agent_definition_path: str | None = None
+    runtime_version: str = "0.3.0"
     command_max_clock_skew_seconds: int = Field(default=60, ge=1, le=600)
     command_nonce_ttl_seconds: int = Field(default=600, ge=60, le=3_600)
     max_task_request_bytes: int = Field(default=65_536, ge=1_024, le=1_048_576)
+    market_data_base_url: str = "https://api.binance.com"
+    market_data_connect_timeout_seconds: float = Field(default=3.0, gt=0, le=30)
+    market_data_read_timeout_seconds: float = Field(default=8.0, gt=0, le=60)
+    market_data_max_attempts: int = Field(default=3, ge=1, le=5)
+    market_data_retry_base_seconds: float = Field(default=0.25, gt=0, le=10)
+    market_data_retry_max_seconds: float = Field(default=2.0, gt=0, le=30)
+    market_data_max_response_bytes: int = Field(default=2_000_000, ge=1_024, le=10_000_000)
+    market_data_max_concurrency: int = Field(default=4, ge=1, le=20)
+    market_data_cache_ttl_seconds: int = Field(default=10, ge=1, le=300)
+    market_data_allow_insecure_localhost: bool = False
 
     @model_validator(mode="after")
     def validate_secrets(self) -> AgentRuntimeSettings:
@@ -37,6 +51,8 @@ class AgentRuntimeSettings(BaseSettings):
             raise ValueError("Hub ingest and command secrets must differ")
         if not self.tomiris_hub_url.startswith(("http://", "https://")):
             raise ValueError("TOMIRIS_HUB_URL must be HTTP(S)")
+        if self.tomiris_runtime_mode == "analytical" and self.tomiris_agent_definition_path is None:
+            raise ValueError("analytical runtime requires TOMIRIS_AGENT_DEFINITION_PATH")
         return self
 
     @property

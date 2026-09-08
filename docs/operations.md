@@ -35,3 +35,25 @@ the cold-start grace, retry policy and signal deadline are the supported control
 Production HF deployments must install TOMIRIS from an owner-approved immutable tag. The Phase 02
 template is pinned to `v0.2-orchestrator-pass`; never replace it with `main` or a feature branch.
 Upgrade by explicitly changing the pin to the next certified tag and rebuilding the Space.
+
+## Phase 03 pilot operations
+
+Apply migration 0004 and sync the reviewed registry. For an analytical Space set
+`TOMIRIS_RUNTIME_MODE=analytical`, a single `TOMIRIS_AGENT_DEFINITION_PATH`, matching identity,
+role/capabilities/assets, and the existing two purpose-separated secrets. The selected definition
+must be one of `agents/definitions/*.yaml`; never place provider or exchange secrets in it.
+
+Run an explicit public-data preview without accounts or orders:
+
+```powershell
+python scripts/run_live_pilot_analysis.py
+```
+
+The command fetches only public closed candles and prints analytical biases plus version lineage.
+It does not submit orders or claim profitability. Deterministic CI uses fixtures; public-provider
+availability is never a required CI dependency. Monitor market-data request/failure/latency,
+analysis failure/abstention/latency and feature failure counters without task UUID labels.
+
+After owner approval and creation of `v0.3-pilot-agents-pass`, update only Spaces that need Phase 03
+roles from the currently pinned `v0.2-orchestrator-pass`. Rebuild and verify the capability/role API
+handshake. Do not point a Space at `main` or the feature branch.

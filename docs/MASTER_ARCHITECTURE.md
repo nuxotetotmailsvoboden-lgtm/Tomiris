@@ -165,3 +165,26 @@ Hub transaction.
 Completeness has three terminal states: FULL, DEGRADED and CRITICAL. CRITICAL carries
 `INSUFFICIENT_DATA` and blocks any future decision pipeline. These states express coverage, not a
 LONG/SHORT vote. See [`ORCHESTRATOR_ARCHITECTURE.md`](ORCHESTRATOR_ARCHITECTURE.md).
+
+## Phase 03 analytical platform
+
+Phase 03 adds three stable extension boundaries: `tomiris_market_data` normalizes untrusted public
+data, `tomiris_features` computes deterministic versioned features, and `tomiris_agent_roles`
+builds config-driven plugins. Universal Runtime performs collection and delivery around the role;
+Secure Hub and Orchestrator remain generic.
+
+```mermaid
+flowchart LR
+  D[AgentDefinition] --> RR[Role Registry]
+  RR --> UR[Universal Runtime]
+  UR --> MP[Public Provider]
+  MP --> Q[Quality / Cutoff]
+  Q --> FP[Feature Pipeline]
+  FP --> RP[Role Plugin]
+  RP --> AS[Versioned AgentSignal]
+  AS --> H[Secure Hub]
+```
+
+BTC context, ETH technical and SOL technical are pilots, not trading bots. Adding X, Reddit,
+order-flow, macro or gold analysis adds plugins/adapters/configuration—not Hub or Orchestrator
+branches. `AgentSignal != TradeDecision` remains a hard boundary.

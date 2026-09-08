@@ -95,6 +95,14 @@ class Signal(Base):
     data_timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     analysis_timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     signal_ttl_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
+    role_id: Mapped[str | None] = mapped_column(String(64))
+    role_version: Mapped[str | None] = mapped_column(String(32))
+    config_version: Mapped[str | None] = mapped_column(String(32))
+    feature_pipeline_version: Mapped[str | None] = mapped_column(String(64))
+    analysis_schema_version: Mapped[str | None] = mapped_column(String(16))
+    data_provider: Mapped[str | None] = mapped_column(String(128))
+    data_as_of: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    confidence_model_version: Mapped[str | None] = mapped_column(String(32))
     payload_json: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
     payload_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -108,10 +116,25 @@ class Signal(Base):
             "(task_id IS NOT NULL AND orchestration_run_id IS NOT NULL)",
             name="ck_signal_task_lineage",
         ),
+        CheckConstraint(
+            "(role_id IS NULL AND role_version IS NULL AND config_version IS NULL AND "
+            "feature_pipeline_version IS NULL AND analysis_schema_version IS NULL AND "
+            "data_provider IS NULL AND data_as_of IS NULL AND confidence_model_version IS NULL) "
+            "OR (role_id IS NOT NULL AND role_version IS NOT NULL AND config_version IS NOT NULL "
+            "AND feature_pipeline_version IS NOT NULL AND analysis_schema_version IS NOT NULL "
+            "AND data_provider IS NOT NULL AND data_as_of IS NOT NULL "
+            "AND confidence_model_version IS NOT NULL)",
+            name="ck_signal_analytical_lineage",
+        ),
+        CheckConstraint(
+            "data_as_of IS NULL OR data_as_of <= analysis_timestamp",
+            name="ck_signal_data_cutoff",
+        ),
         Index("ix_signals_agent_received", "agent_id", "received_at"),
         Index("ix_signals_snapshot", "snapshot_id"),
         Index("ix_signals_correlation", "correlation_id"),
         Index("uq_signals_task_result", "task_id", unique=True),
+        Index("ix_signals_role_version", "role_id", "role_version", "config_version"),
     )
 
 

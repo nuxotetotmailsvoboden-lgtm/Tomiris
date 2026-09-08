@@ -23,6 +23,13 @@
 | Optional task loss | run DEGRADED | required capability minimum remains present | review operational quality |
 | Required/critical loss | run CRITICAL + INSUFFICIENT_DATA | no optimistic completion | future decision pipeline must not start |
 | Orchestrator restart | bounded DB reconciliation | no duplicate run/task creation | verify ORCHESTRATION_RECOVERED audit |
+| Public provider timeout/transport error | bounded retry then `ABSTAIN/PROVIDER_*` | failure is never converted to NEUTRAL | inspect provider latency/failure metrics |
+| Provider 429/selected 5xx | jittered backoff, bounded `Retry-After` | no unbounded hammering | reduce cadence or change reviewed provider endpoint |
+| Provider 4xx/schema/oversized body | immediate normalized failure | no feature computation on untrusted payload | repair request/provider contract |
+| Stale/future/open/duplicate/gapped bars | quality veto and `ABSTAIN` | no lookahead or invented opinion | inspect source and cutoff policy |
+| Insufficient feature history | invalid feature and `ABSTAIN` | no NaN/zero substitution | fetch required closed history or adjust reviewed config |
+| Role/config mismatch | fail-fast runtime startup | readiness never claims compatible analysis | repair AgentDefinition/deployment env |
+| One pilot role fails | its task remains missing or returns explicit ABSTAIN | other agents and runs stay isolated | apply orchestration criticality policy |
 
 Every failure path is machine-coded. User-controlled validation errors must not escape as an
 unhandled 500.

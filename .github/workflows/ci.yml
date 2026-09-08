@@ -1,4 +1,4 @@
-name: tomiris-phase-02-ci
+name: tomiris-phase-03-ci
 on: [push, pull_request]
 jobs:
   test:
@@ -27,20 +27,36 @@ jobs:
         with: {python-version: '3.12'}
       - run: pip install '.[dev]'
       - run: python -m alembic upgrade head
+      - name: Migration round trip
+        run: |
+          python -m alembic downgrade 0003_orchestrator
+          python -m alembic upgrade head
+          python -m alembic check
       - run: python scripts/sync_agent_registry.py
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy src
       - run: bandit -q -r src
-      - name: Unit tests
+      - name: Phase 01 and Phase 02 regression
+        run: >-
+          pytest -q tests
+          --ignore=tests/unit/test_phase03_features.py
+          --ignore=tests/unit/test_phase03_market_data.py
+          --ignore=tests/unit/test_phase03_role_framework.py
+          --ignore=tests/unit/test_phase03_runtime.py
+          --ignore=tests/security/test_phase03_provider_security.py
+          --ignore=tests/integration/test_phase03_binance_provider.py
+          --ignore=tests/integration/test_phase03_signal_lineage.py
+          --ignore=tests/e2e/test_phase03_pilot_e2e.py
+      - name: Phase 03 unit tests
         run: pytest -q tests/unit
-      - name: Security tests
+      - name: Phase 03 security tests
         run: pytest -q tests/security
-      - name: PostgreSQL integration tests
+      - name: Phase 03 PostgreSQL integration tests
         run: pytest -q tests/integration
-      - name: PostgreSQL concurrency tests
+      - name: Phase 03 PostgreSQL concurrency tests
         run: pytest -q tests/concurrency
       - name: Notification tests
         run: pytest -q tests/notification
-      - name: Phase 02 end-to-end tests
+      - name: Phase 03 end-to-end tests
         run: pytest -q tests/e2e

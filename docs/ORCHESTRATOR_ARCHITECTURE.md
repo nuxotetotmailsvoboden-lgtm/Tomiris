@@ -30,7 +30,7 @@ new capability.
 flowchart LR
   O[Orchestrator] -->|signed AnalysisTaskRequest| U[Universal Agent Runtime]
   U --> I[AnalysisHandler interface]
-  I -->|Phase 02: TestAnalysisHandler only| S[AgentSignal]
+  I -->|selected test handler or analytical role plugin| S[AgentSignal]
   S -->|independently signed| H[Secure Hub]
   H --> P[(PostgreSQL)]
 ```
@@ -42,3 +42,8 @@ agent-count branch exists.
 
 Operational metrics cover run/task counts, retries, circuit opens, ACK latency and signal latency.
 They deliberately do not claim analytical or trading accuracy.
+
+Phase 03 keeps this orchestration boundary unchanged. Analytical mode loads a versioned,
+declarative role through the same runtime interface; test mode remains available for deterministic
+orchestration regression tests. Neither mode gives the Orchestrator analytical voting or trading
+responsibilities.

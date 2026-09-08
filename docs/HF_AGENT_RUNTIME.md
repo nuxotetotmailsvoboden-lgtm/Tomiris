@@ -22,8 +22,14 @@ example with `v0.3-pilot-agents-pass`), rebuild the Space, and verify its capabi
    remains authoritative.
 
 The runtime exposes `GET /health/live`, `GET /health/ready`, `GET /v1/capabilities` and signed
-`POST /v1/analyze`. Phase 02 installs only `TestAnalysisHandler`; future adapters implement the
-same `AnalysisHandler` interface.
+`POST /v1/analyze`. Test deployments use `TestAnalysisHandler`. Phase 03 analytical deployments
+set `TOMIRIS_RUNTIME_MODE=analytical` and provide one reviewed `TOMIRIS_AGENT_DEFINITION_PATH`;
+Runtime loads the declared plugin through the role registry without asset-specific core branches.
+
+For an analytical Space, copy exactly one definition file into the Space repository, ensure the
+Docker build includes it, and point the environment variable at that file. Identity, role,
+capabilities and assets in environment and definition must match or startup fails. Public provider
+settings are non-secret; the pilot uses HTTPS Binance public endpoints with no exchange key.
 
 Generate each purpose-specific Space secret locally:
 
@@ -36,3 +42,7 @@ The command reads the selected master root from the environment and prints only 
 Never paste a root secret into a Space. Never commit either secret. Space sleep is handled by cold
 start grace and durable retry; self-ping, account rotation, artificial traffic and quota bypass are
 not part of TOMIRIS.
+
+The current universal template remains pinned to stable `v0.2-orchestrator-pass` during owner
+review. After `v0.3-pilot-agents-pass` is approved and created, explicitly change the pin only for
+Spaces that need a Phase 03 plugin. BTC, ETH and SOL Spaces can roll out or roll back independently.

@@ -56,7 +56,7 @@ async def test_migrations_registry_and_valid_signal(clean_database: DatabaseHarn
         migration = await session.scalar(text("SELECT version_num FROM alembic_version"))
         signal = await session.scalar(select(Signal))
         audit = await session.scalar(select(AuditEvent).where(AuditEvent.outcome == "ACCEPTED"))
-    assert migration == "0003_orchestrator"
+    assert migration == "0004_pilot_agents"
     assert signal is not None and signal.correlation_id == audit.correlation_id
     assert signal.snapshot_id == audit.snapshot_id
     assert signal.payload_json["evidence"][0]["provider"] == "tomiris-tests"

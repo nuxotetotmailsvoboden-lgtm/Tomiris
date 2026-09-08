@@ -75,6 +75,7 @@ class RuntimeCapabilities(BaseModel):
     capabilities: Annotated[list[str], Field(max_length=50)]
     supported_assets: Annotated[list[str], Field(max_length=100)]
     protocol_versions: Annotated[list[str], Field(min_length=1, max_length=10)]
+    analytical_role_api_version: Annotated[str | None, Field(max_length=16)] = None
 
 
 class CapabilityRequirement(BaseModel):

@@ -1,19 +1,21 @@
 # Analytics specification
 
-Future analytics must emit calibrated probabilities or abstain, state horizon and asset, identify
-snapshot and source provenance, and separate observation time from analysis time. Evaluation must
-use time-ordered holdouts, fees/slippage where relevant, regime slices, calibration error, false
-discovery controls, and baseline comparisons. Accuracy alone is insufficient.
+Phase 03 pilot analytics emit deterministic directional strength or abstain, state horizon and
+asset, identify snapshot/source/component versions, and separate observation, cutoff and processing
+time. Confidence is agreement/signal strength—not a calibrated probability of profit. Calibration,
+time-ordered holdouts, fees/slippage, false-discovery control and predictive evaluation remain
+future requirements before any result can influence trading.
 
-The Phase 01 `SignalEnvelope` is a storage contract, not proof of predictive value. Confidence and
-impact are bounded claims from an agent; the Hub validates shape and authority but does not trust,
-train, weight, or trade them.
+`SignalEnvelope` is a storage contract, not proof of predictive value. The Hub validates shape,
+lineage and authority but does not trust, train, weight or trade analytical opinions. `NEUTRAL`
+requires valid data and no edge; provider/schema/freshness/history failure produces `ABSTAIN`.
 
-## Future data-quality veto and routing
+## Implemented pilot quality gate and future routing
 
-Before analytics, a future Data Quality Engine must assess freshness, sequence gaps, provider
-conflicts, clock drift, unrealistic values, cross-exchange disagreement, and snapshot corruption.
-Its veto outranks analytical confidence.
+Before pilot analytics, the Phase 03 local quality gate assesses freshness, sequence gaps,
+duplicates, future/open bars, unrealistic OHLCV values and instrument identity. Its veto outranks
+analytical confidence. Cross-provider consensus, clock-drift fleet monitoring and institutional
+quality scoring remain future work.
 
 Future documented regimes are `TREND_UP`, `TREND_DOWN`, `RANGE`, `BREAKOUT`, `SQUEEZE`,
 `HIGH_VOL`, `LOW_VOL`, `PANIC`, `RISK_ON`, `RISK_OFF`, `LIQUIDATION_EVENT`, `NEWS_EVENT`, `CHAOS`,
