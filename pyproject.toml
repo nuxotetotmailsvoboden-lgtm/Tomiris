@@ -22,11 +22,18 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest>=8,<9", "pytest-asyncio>=0.24,<1", "ruff>=0.6,<1",
-  "mypy>=1.11,<2", "bandit>=1.7,<2", "types-PyYAML>=6.0.12",
+  "mypy>=1.11,<3", "bandit>=1.7,<2", "types-PyYAML>=6.0.12",
+  "asgi-lifespan>=2.1,<3", "pytest-cov>=5,<8",
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/tomiris_hub", "src/tomiris_agent_sdk"]
+packages = [
+  "src/tomiris_common",
+  "src/tomiris_core_contracts",
+  "src/tomiris_agent_sdk",
+  "src/tomiris_hub",
+  "src/tomiris_notifications",
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -48,4 +55,3 @@ strict = true
 mypy_path = "src"
 plugins = ["pydantic.mypy"]
 exclude = ["migrations"]
-

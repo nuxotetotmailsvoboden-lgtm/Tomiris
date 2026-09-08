@@ -30,10 +30,20 @@ class Agent(Base):
     role: Mapped[str] = mapped_column(String(64), nullable=False)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     protocol_version: Mapped[str] = mapped_column(String(16), nullable=False)
+    capabilities: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    criticality: Mapped[str] = mapped_column(String(16), nullable=False, default="NORMAL")
+    supported_assets: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    supported_evidence_types: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
     metadata_json: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "criticality IN ('LOW','NORMAL','HIGH','CRITICAL')",
+            name="ck_agent_criticality",
+        ),
     )
 
 
@@ -53,7 +63,7 @@ class MarketSnapshot(Base):
 
 
 class Nonce(Base):
-    __tablename__ = "nonces"
+    __tablename__ = "used_nonces"
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
     agent_id: Mapped[str] = mapped_column(ForeignKey("agents.agent_id"), nullable=False)
     nonce: Mapped[str] = mapped_column(String(256), nullable=False)
@@ -69,6 +79,8 @@ class Signal(Base):
     snapshot_id: Mapped[UUID] = mapped_column(
         ForeignKey("market_snapshots.snapshot_id"), nullable=False
     )
+    correlation_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    causation_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True))
     protocol_version: Mapped[str] = mapped_column(String(16), nullable=False)
     asset: Mapped[str] = mapped_column(String(32), nullable=False)
     bias: Mapped[str] = mapped_column(String(16), nullable=False)
@@ -88,6 +100,7 @@ class Signal(Base):
         CheckConstraint("bias IN ('LONG','SHORT','NEUTRAL','ABSTAIN')", name="ck_signal_bias"),
         Index("ix_signals_agent_received", "agent_id", "received_at"),
         Index("ix_signals_snapshot", "snapshot_id"),
+        Index("ix_signals_correlation", "correlation_id"),
     )
 
 
@@ -101,10 +114,45 @@ class AuditEvent(Base):
     request_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
     agent_id: Mapped[str | None] = mapped_column(String(64))
     message_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True))
+    snapshot_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True))
+    correlation_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    causation_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True))
     payload_hash: Mapped[str | None] = mapped_column(String(64))
     metadata_json: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False, default=dict)
     __table_args__ = (
         Index("ix_audit_request", "request_id"),
         Index("ix_audit_agent_occurred", "agent_id", "occurred_at"),
         Index("ix_audit_message", "message_id"),
+        Index("ix_audit_correlation", "correlation_id", "occurred_at"),
+    )
+
+
+class NotificationOutbox(Base):
+    __tablename__ = "notification_outbox"
+    notification_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, default=uuid4
+    )
+    event_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    event_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    snapshot_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True))
+    channel: Mapped[str] = mapped_column(String(32), nullable=False)
+    recipient_ref: Mapped[str] = mapped_column(String(256), nullable=False)
+    payload_json: Mapped[dict[str, object]] = mapped_column("payload", JSONB, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="PENDING")
+    attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    next_attempt_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_error_code: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    idempotency_key: Mapped[str] = mapped_column(String(256), nullable=False, unique=True)
+    correlation_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    causation_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True))
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('PENDING','SENDING','SENT','RETRY','FAILED','DEAD_LETTER')",
+            name="ck_notification_status",
+        ),
+        CheckConstraint("attempt_count >= 0", name="ck_notification_attempt_count"),
+        Index("ix_notification_dispatch", "status", "next_attempt_at"),
+        Index("ix_notification_event", "event_id"),
     )

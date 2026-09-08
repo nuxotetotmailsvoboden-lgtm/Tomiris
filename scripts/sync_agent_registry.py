@@ -26,10 +26,14 @@ async def main() -> None:
                 "role": item.role,
                 "enabled": item.enabled,
                 "protocol_version": item.protocol_version,
+                "criticality": item.criticality,
+                "capabilities": item.capabilities,
+                "supported_assets": item.supported_assets,
+                "supported_evidence_types": item.supported_evidence_types,
                 "metadata_json": {
+                    **item.metadata,
                     "account_alias": item.account_alias,
-                    "space_name": item.space_name,
-                    "capabilities": item.capabilities,
+                    "space_alias": item.space_alias or item.space_name,
                 },
             }
             statement = (

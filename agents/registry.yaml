@@ -4,7 +4,14 @@ agents:
     role: test_agent
     enabled: true
     protocol_version: "1.0"
+    criticality: NORMAL
     account_alias: local
-    space_name: phase-01-test-agent
+    space_alias: phase-01-test-agent
     capabilities:
       - signal_ingestion
+    supported_assets:
+      - TEST
+    supported_evidence_types:
+      - test
+    metadata:
+      purpose: phase-01-system-test

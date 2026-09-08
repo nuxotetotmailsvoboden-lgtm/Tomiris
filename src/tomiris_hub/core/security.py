@@ -22,7 +22,10 @@ def sign_hmac(secret: str, canonical: str) -> str:
 
 
 def constant_time_equals(left: str, right: str) -> bool:
-    return hmac.compare_digest(left.encode("ascii"), right.encode("ascii"))
+    try:
+        return hmac.compare_digest(left.encode("ascii"), right.encode("ascii"))
+    except UnicodeEncodeError:
+        return False
 
 
 def generate_nonce() -> str:

@@ -17,7 +17,7 @@ async def ready(request: Request) -> dict[str, str]:
     try:
         async with request.app.state.session_factory() as session:
             await session.execute(text("SELECT 1"))
-    except SQLAlchemyError:
+    except (SQLAlchemyError, OSError, TimeoutError):
         from fastapi import HTTPException
 
         raise HTTPException(status_code=503, detail={"code": "DATABASE_UNAVAILABLE"}) from None
