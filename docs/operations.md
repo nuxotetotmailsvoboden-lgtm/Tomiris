@@ -31,3 +31,7 @@ The command prints compact JSON and never emits a trading signal. Alert on CRITI
 `AGENT_AUTH_FAILED`, endpoint policy rejection, repeated timeouts, circuit open, expired leases and
 recovery events. Do not notify Telegram for every retry or probe. Space sleep needs no keep-alive;
 the cold-start grace, retry policy and signal deadline are the supported controls.
+
+Production HF deployments must install TOMIRIS from an owner-approved immutable tag. The Phase 02
+template is pinned to `v0.2-orchestrator-pass`; never replace it with `main` or a feature branch.
+Upgrade by explicitly changing the pin to the next certified tag and rebuilding the Space.

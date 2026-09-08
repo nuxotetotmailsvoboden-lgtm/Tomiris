@@ -1,1 +1,1 @@
-tomiris @ git+https://github.com/nuxotetotmailsvoboden-lgtm/Tomiris.git@phase-02-orchestrator
+tomiris @ git+https://github.com/nuxotetotmailsvoboden-lgtm/Tomiris.git@v0.2-orchestrator-pass

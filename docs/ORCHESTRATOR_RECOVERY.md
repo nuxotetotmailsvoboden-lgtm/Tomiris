@@ -5,6 +5,9 @@ reclaims expired DISPATCHING leases, preserves active leases, expires missed sig
 reconciles a task when its signal already exists. It never creates a replacement run or changes a
 task ID.
 
+Every unfinished run is re-evaluated even when no task row needs repair. This closes the crash
+window where every task was already terminal but the run had not yet been finalized.
+
 ```mermaid
 flowchart TD
   S[Worker starts] --> R[Read unfinished runs]

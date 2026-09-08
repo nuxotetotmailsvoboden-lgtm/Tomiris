@@ -3,16 +3,22 @@
 Every Space uses the same template in `deploy/hf_space_template`. A new Space is a deployment of
 the existing runtime, not a new system or copied `spaceN.py` codebase.
 
+The production template pins TOMIRIS to the immutable `v0.2-orchestrator-pass` tag. A moving
+branch—including `main` or a feature branch—is never a production dependency. Upgrades are
+controlled changes: review a new certified release, replace the pinned tag explicitly (for
+example with `v0.3-pilot-agents-pass`), rebuild the Space, and verify its capability handshake.
+
 1. Create a Docker Space and copy the universal template.
-2. Set `TOMIRIS_AGENT_ID`, `TOMIRIS_AGENT_ROLE`, `TOMIRIS_AGENT_CAPABILITIES` and
+2. Confirm `requirements.txt` points to the owner-approved immutable release tag.
+3. Set `TOMIRIS_AGENT_ID`, `TOMIRIS_AGENT_ROLE`, `TOMIRIS_AGENT_CAPABILITIES` and
    `TOMIRIS_AGENT_SUPPORTED_ASSETS`.
-3. Set `TOMIRIS_HUB_URL`, `TOMIRIS_HUB_KEY_ID` and its agent-specific
+4. Set `TOMIRIS_HUB_URL`, `TOMIRIS_HUB_KEY_ID` and its agent-specific
    `TOMIRIS_HUB_AGENT_SECRET` as Space secrets.
-4. Set `TOMIRIS_ORCHESTRATOR_ID`, `TOMIRIS_ORCHESTRATOR_COMMAND_KEY_ID` and the separate
+5. Set `TOMIRIS_ORCHESTRATOR_ID`, `TOMIRIS_ORCHESTRATOR_COMMAND_KEY_ID` and the separate
    `TOMIRIS_ORCHESTRATOR_COMMAND_SECRET` as Space secrets.
-5. Register the logical agent and deployment endpoint centrally. The endpoint must be HTTPS in
+6. Register the logical agent and deployment endpoint centrally. The endpoint must be HTTPS in
    production and match the configured host allowlist.
-6. Verify live, ready and capabilities handshake. Drift makes runtime state DEGRADED; the registry
+7. Verify live, ready and capabilities handshake. Drift makes runtime state DEGRADED; the registry
    remains authoritative.
 
 The runtime exposes `GET /health/live`, `GET /health/ready`, `GET /v1/capabilities` and signed

@@ -31,6 +31,7 @@ class RecoveryService:
     async def reconcile(self) -> list[UUID]:
         now = self.clock.now()
         recovered: list[UUID] = []
+        unfinished: list[UUID] = []
         async with self.session_factory() as session, session.begin():
             runs = list(
                 (
@@ -48,6 +49,7 @@ class RecoveryService:
                 ).all()
             )
             for run in runs:
+                unfinished.append(run.orchestration_run_id)
                 tasks = list(
                     (
                         await session.scalars(
@@ -113,6 +115,6 @@ class RecoveryService:
                         metadata={"reconciled_tasks": len(tasks)},
                     )
                     recovered.append(run.orchestration_run_id)
-        for run_id in recovered:
+        for run_id in unfinished:
             await self.evaluator.evaluate(run_id)
         return recovered

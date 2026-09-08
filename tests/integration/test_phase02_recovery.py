@@ -61,3 +61,33 @@ async def test_restart_recovers_expired_lease_and_waiting_signal(
         assert task is not None and task.status == "TIMED_OUT"
         assert run is not None and run.status == "CRITICAL"
         assert run.outcome == "INSUFFICIENT_DATA"
+
+
+async def test_restart_finalizes_run_when_tasks_are_already_terminal(
+    clean_database: DatabaseHarness,
+) -> None:
+    await add_endpoint(clean_database, "TEST_AGENT_001")
+    clock = FakeClock(NOW)
+    metrics = OperationalMetrics()
+    plan = await OrchestrationPlanner(
+        clean_database.session_factory, clock, CapabilityRouter(), metrics
+    ).create(
+        snapshot_id=VALID_SNAPSHOT_ID,
+        asset="TEST",
+        trigger_type="TEST",
+        policy=policy(
+            CapabilityRequirement(capability="signal_ingestion", minimum_responses=1, max_agents=1)
+        ),
+    )
+    async with clean_database.session_factory() as session, session.begin():
+        task = await session.get(AgentTask, plan.task_ids[0])
+        assert task is not None
+        task.status = "SIGNAL_RECEIVED"
+        task.signal_received_at = NOW
+    evaluator = CompletenessEvaluator(clean_database.session_factory, clock, metrics)
+    recovery = RecoveryService(clean_database.session_factory, clock, evaluator)
+    assert await recovery.reconcile() == []
+    async with clean_database.session_factory() as session:
+        run = await session.get(OrchestrationRun, plan.orchestration_run_id)
+        assert run is not None
+        assert run.status == "FULL"
