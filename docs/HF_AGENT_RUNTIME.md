@@ -3,10 +3,10 @@
 Every Space uses the same template in `deploy/hf_space_template`. A new Space is a deployment of
 the existing runtime, not a new system or copied `spaceN.py` codebase.
 
-The production template pins TOMIRIS to the immutable `v0.2-orchestrator-pass` tag. A moving
-branch—including `main` or a feature branch—is never a production dependency. Upgrades are
-controlled changes: review a new certified release, replace the pinned tag explicitly (for
-example with `v0.3-pilot-agents-pass`), rebuild the Space, and verify its capability handshake.
+The Phase 03 production template pins TOMIRIS to the immutable `v0.3-pilot-agents-pass` tag. A
+moving branch—including `main` or a feature branch—is never a production dependency. Existing
+Phase 02 deployments may remain on `v0.2-orchestrator-pass`. BTC, ETH and SOL analytical
+deployments require `v0.3-pilot-agents-pass` or a later compatible certified release.
 
 1. Create a Docker Space and copy the universal template.
 2. Confirm `requirements.txt` points to the owner-approved immutable release tag.
@@ -43,6 +43,7 @@ Never paste a root secret into a Space. Never commit either secret. Space sleep 
 start grace and durable retry; self-ping, account rotation, artificial traffic and quota bypass are
 not part of TOMIRIS.
 
-The current universal template remains pinned to stable `v0.2-orchestrator-pass` during owner
-review. After `v0.3-pilot-agents-pass` is approved and created, explicitly change the pin only for
-Spaces that need a Phase 03 plugin. BTC, ETH and SOL Spaces can roll out or roll back independently.
+The owner creates `v0.3-pilot-agents-pass` only after release review. Until then, deterministic CI
+validates the local source and must not try to install the absent remote tag. Roll out each Space
+independently; no fleet-wide upgrade is required. Rollback means pinning only the affected Space to
+its previous compatible certified tag and rebuilding it.

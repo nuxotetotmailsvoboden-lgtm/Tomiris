@@ -32,9 +32,10 @@ The command prints compact JSON and never emits a trading signal. Alert on CRITI
 recovery events. Do not notify Telegram for every retry or probe. Space sleep needs no keep-alive;
 the cold-start grace, retry policy and signal deadline are the supported controls.
 
-Production HF deployments must install TOMIRIS from an owner-approved immutable tag. The Phase 02
-template is pinned to `v0.2-orchestrator-pass`; never replace it with `main` or a feature branch.
-Upgrade by explicitly changing the pin to the next certified tag and rebuilding the Space.
+Production HF deployments must install TOMIRIS from an owner-approved immutable tag. Existing
+Phase 02 deployments may remain pinned to `v0.2-orchestrator-pass`; never replace a certified pin
+with `main` or a feature branch. Upgrade or rollback a specific Space by selecting the appropriate
+compatible certified tag and rebuilding it.
 
 ## Phase 03 pilot operations
 
@@ -54,6 +55,8 @@ It does not submit orders or claim profitability. Deterministic CI uses fixtures
 availability is never a required CI dependency. Monitor market-data request/failure/latency,
 analysis failure/abstention/latency and feature failure counters without task UUID labels.
 
-After owner approval and creation of `v0.3-pilot-agents-pass`, update only Spaces that need Phase 03
-roles from the currently pinned `v0.2-orchestrator-pass`. Rebuild and verify the capability/role API
-handshake. Do not point a Space at `main` or the feature branch.
+The Phase 03 template is pinned to `v0.3-pilot-agents-pass`. The owner creates that tag after final
+review; pre-release CI validates local source without fetching it. BTC/ETH/SOL analytical Spaces
+require this tag or a later compatible certified release. Rebuild and verify the capability/role
+API handshake one Space at a time—simultaneous fleet rollout is unnecessary. Roll back an affected
+Space by restoring its previous certified tag. Do not point a Space at `main` or a feature branch.

@@ -15,3 +15,11 @@
 Migration 0004 stores critical analytical lineage as first-class nullable signal columns. Legacy
 Phase 01/02 signals keep every field null; an analytical signal must supply the whole lineage set.
 This all-or-none invariant is enforced by Pydantic and PostgreSQL.
+
+## Deployment release policy
+
+Phase 03 BTC/ETH/SOL analytical Spaces install the immutable
+`v0.3-pilot-agents-pass` release, or a later compatible certified release. Production never uses
+`main` or a feature branch. Existing Phase 02 deployments may remain on
+`v0.2-orchestrator-pass`. Each Space rolls forward independently; rollback restores only that
+Space's previous compatible certified tag.

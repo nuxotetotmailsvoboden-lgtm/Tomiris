@@ -43,6 +43,7 @@ jobs:
           --ignore=tests/unit/test_phase03_features.py
           --ignore=tests/unit/test_phase03_market_data.py
           --ignore=tests/unit/test_phase03_role_framework.py
+          --ignore=tests/unit/test_phase03_release_certification.py
           --ignore=tests/unit/test_phase03_runtime.py
           --ignore=tests/security/test_phase03_provider_security.py
           --ignore=tests/integration/test_phase03_binance_provider.py
