@@ -1,0 +1,4 @@
+from tomiris_agent_runtime.application import create_agent_runtime_app
+from tomiris_agent_runtime.config import AgentRuntimeSettings
+
+app = create_agent_runtime_app(AgentRuntimeSettings())

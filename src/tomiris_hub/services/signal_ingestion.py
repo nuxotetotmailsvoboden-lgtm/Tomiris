@@ -11,7 +11,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tomiris_hub.core.clock import Clock
 from tomiris_hub.core.errors import ConflictError, ValidationError
 from tomiris_hub.core.security import body_sha256
-from tomiris_hub.database.models import Agent, AuditEvent, MarketSnapshot, Nonce, Signal
+from tomiris_hub.database.models import (
+    Agent,
+    AgentRuntimeState,
+    AgentTask,
+    AuditEvent,
+    MarketSnapshot,
+    Nonce,
+    Signal,
+)
 from tomiris_hub.schemas.signals import SignalEnvelope
 
 logger = logging.getLogger(__name__)
@@ -79,6 +87,31 @@ class SignalIngestionService:
                 await session.flush()
                 if self.after_nonce_flush is not None:
                     await self.after_nonce_flush(session)
+                task: AgentTask | None = None
+                if envelope.task_id is not None:
+                    task = await session.get(AgentTask, envelope.task_id, with_for_update=True)
+                    if task is None:
+                        raise ValidationError("TASK_UNKNOWN", 422)
+                    if task.agent_id != envelope.agent_id:
+                        raise ValidationError("TASK_AGENT_MISMATCH", 403)
+                    if task.orchestration_run_id != envelope.orchestration_run_id:
+                        raise ValidationError("TASK_RUN_MISMATCH", 422)
+                    if task.snapshot_id != envelope.snapshot_id:
+                        raise ValidationError("TASK_SNAPSHOT_MISMATCH", 422)
+                    if task.asset != envelope.asset:
+                        raise ValidationError("TASK_ASSET_MISMATCH", 422)
+                    if task.signal_deadline <= now or task.status == "TIMED_OUT":
+                        raise ValidationError("TASK_EXPIRED", 422)
+                    if task.status == "SIGNAL_RECEIVED":
+                        raise ConflictError("DUPLICATE_TASK_RESULT", 409)
+                    if task.status in {"CANCELLED", "FAILED", "SKIPPED"}:
+                        raise ValidationError("TASK_NOT_ACCEPTING_RESULTS", 409)
+                    if task.status not in {
+                        "DISPATCHING",
+                        "ACKNOWLEDGED",
+                        "WAITING_SIGNAL",
+                    }:
+                        raise ValidationError("TASK_NOT_DISPATCHED", 409)
                 existing = await session.get(Signal, envelope.message_id)
                 if existing is not None:
                     raise ConflictError("DUPLICATE_MESSAGE_ID", 409)
@@ -89,6 +122,8 @@ class SignalIngestionService:
                         agent_id=envelope.agent_id,
                         agent_run_id=envelope.agent_run_id,
                         snapshot_id=envelope.snapshot_id,
+                        task_id=envelope.task_id,
+                        orchestration_run_id=envelope.orchestration_run_id,
                         correlation_id=correlation_id,
                         causation_id=envelope.causation_id,
                         protocol_version=envelope.protocol_version,
@@ -121,6 +156,40 @@ class SignalIngestionService:
                         metadata_json={"snapshot_id": str(envelope.snapshot_id)},
                     )
                 )
+                if task is not None:
+                    task.status = "SIGNAL_RECEIVED"
+                    task.signal_received_at = now
+                    task.lease_owner = None
+                    task.lease_until = None
+                    task.updated_at = now
+                    runtime_state = await session.get(
+                        AgentRuntimeState, envelope.agent_id, with_for_update=True
+                    )
+                    if runtime_state is not None:
+                        runtime_state.last_signal_at = now
+                        runtime_state.last_success_at = now
+                        runtime_state.last_seen_at = now
+                        runtime_state.availability = "HEALTHY"
+                        runtime_state.updated_at = now
+                    session.add(
+                        AuditEvent(
+                            occurred_at=now,
+                            event_type="TASK_SIGNAL_RECEIVED",
+                            outcome="ACCEPTED",
+                            reason_code=None,
+                            request_id=request_id,
+                            agent_id=envelope.agent_id,
+                            message_id=envelope.message_id,
+                            snapshot_id=envelope.snapshot_id,
+                            correlation_id=correlation_id,
+                            causation_id=envelope.task_id,
+                            payload_hash=payload_hash,
+                            metadata_json={
+                                "task_id": str(envelope.task_id),
+                                "orchestration_run_id": str(envelope.orchestration_run_id),
+                            },
+                        )
+                    )
         except IntegrityError as exc:
             raise ConflictError("REPLAY_OR_DUPLICATE", 409) from exc
 

@@ -19,5 +19,13 @@ receive database credentials.
 | Secret disclosure | environment-only secrets, startup policy, log redaction | host compromise defeats process secrecy |
 | Telegram outage/abuse | outbound-only adapter, bounded retries and dead-letter | at-least-once delivery may duplicate a message |
 | Database outage | fail-closed ingestion and readiness 503 | rejection audit cannot persist while DB is down; error is logged |
+| Forged orchestration command | target-bound HMAC, time window and nonce cache | process-local nonce history is lost on Space restart |
+| One Space secret disclosed | HKDF-derived per-agent/purpose key | compromised Space can submit only its own result until rotation |
+| Command key used for ingest | independent roots and HKDF purpose separation | root-host compromise defeats domain isolation |
+| Agent endpoint SSRF | reviewed endpoint table, HTTPS/host allowlist, URL and DNS checks | DNS can change after validation; egress firewall remains recommended |
+| Runtime capability escalation | registry remains authority; handshake only detects drift | registry administration remains privileged |
+| Duplicate work after restart | stable task ID and unique accepted result | handler computation may repeat but cannot create a second accepted result |
+| Late result | Hub rejects `TASK_EXPIRED` and audits rejection | rejection audit lacks accepted signal payload by design |
 
-There are deliberately no inbound Telegram commands or exchange credentials in this phase.
+There are deliberately no inbound Telegram commands, exchange credentials, market sources,
+trading decisions or execution functions in this phase.

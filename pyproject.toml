@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "tomiris-phase-01"
-version = "0.1.0"
-description = "TOMIRIS secure signal hub foundation"
+name = "tomiris"
+version = "0.2.0"
+description = "TOMIRIS secure signal hub and durable orchestrator"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115,<1",
@@ -31,8 +31,10 @@ packages = [
   "src/tomiris_common",
   "src/tomiris_core_contracts",
   "src/tomiris_agent_sdk",
+  "src/tomiris_agent_runtime",
   "src/tomiris_hub",
   "src/tomiris_notifications",
+  "src/tomiris_orchestrator",
 ]
 
 [tool.pytest.ini_options]

@@ -47,6 +47,7 @@ async def clean_database() -> DatabaseHarness:
         await session.execute(
             text(
                 "TRUNCATE notification_outbox, audit_events, signals, used_nonces, "
+                "agent_tasks, orchestration_runs, agent_runtime_states, agent_endpoints, "
                 "market_snapshots, agents RESTART IDENTITY CASCADE"
             )
         )

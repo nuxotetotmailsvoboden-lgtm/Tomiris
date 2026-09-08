@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Annotated, Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from tomiris_common.validation import validate_bounded_json
 
@@ -56,6 +56,8 @@ class SignalEnvelope(BaseModel):
     agent_id: Annotated[str, Field(pattern=r"^[A-Z][A-Z0-9_]{2,63}$")]
     agent_run_id: UUID
     snapshot_id: UUID
+    task_id: UUID | None = None
+    orchestration_run_id: UUID | None = None
     correlation_id: UUID | None = None
     causation_id: UUID | None = None
     asset: Annotated[str, Field(pattern=r"^[A-Z0-9_./-]{2,32}$")]
@@ -78,6 +80,12 @@ class SignalEnvelope(BaseModel):
     @classmethod
     def bound_metadata(cls, value: dict[str, Any]) -> dict[str, Any]:
         return validate_bounded_json(value)
+
+    @model_validator(mode="after")
+    def validate_task_lineage(self) -> SignalEnvelope:
+        if (self.task_id is None) != (self.orchestration_run_id is None):
+            raise ValueError("task_id and orchestration_run_id must be provided together")
+        return self
 
 
 AgentSignal = SignalEnvelope

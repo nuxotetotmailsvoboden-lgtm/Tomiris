@@ -1,6 +1,8 @@
-# TOMIRIS — Phase 01 Secure Hub
+# TOMIRIS — Phase 02 Orchestrator Nervous System
 
-Phase 01 is only a secure, append-only signal ingestion foundation. It contains no market data, trading, exchange credentials, LLMs, or decisions.
+Phase 02 extends the secure Hub with a durable, capability-routed Orchestrator and one Universal
+Agent Runtime. It contains no market data, analytical professions, trading, exchange credentials,
+Chief, Judge, Risk Engine or decisions.
 
 ## Windows quick start
 
@@ -45,5 +47,6 @@ Telegram remains disabled unless `TELEGRAM_ENABLED=true`, `TELEGRAM_BOT_TOKEN`, 
 `TELEGRAM_CHAT_ID` are explicitly provided. It is outbound-only.
 
 For the implemented boundaries and future invariants, start with
-[`docs/MASTER_ARCHITECTURE.md`](docs/MASTER_ARCHITECTURE.md). Phase 01 deliberately does not
+[`docs/ORCHESTRATOR_ARCHITECTURE.md`](docs/ORCHESTRATOR_ARCHITECTURE.md) and
+[`docs/MASTER_ARCHITECTURE.md`](docs/MASTER_ARCHITECTURE.md). Phase 02 deliberately does not
 collect markets, make decisions, backtest, learn, or trade.

@@ -153,3 +153,15 @@ Chief/Judge; neither failure may become optimistic acceptance.
 One Hub process and one or more workers may share PostgreSQL. Workers claim with
 `FOR UPDATE SKIP LOCKED`. Migrations run before registry bootstrap and startup. See
 [`FAILURE_MATRIX.md`](FAILURE_MATRIX.md) and [`THREAT_MODEL.md`](THREAT_MODEL.md).
+
+## Phase 02 nervous system
+
+Phase 02 adds durable `orchestration_runs` and `agent_tasks`, deployment-only
+`agent_endpoints`, and observational `agent_runtime_states`. The Orchestrator selects agents from
+reviewed capability/asset registry data and never embeds a 27-agent topology. A signed command
+produces only a 202 ACK; a separately signed task-bound signal completes work atomically in the
+Hub transaction.
+
+Completeness has three terminal states: FULL, DEGRADED and CRITICAL. CRITICAL carries
+`INSUFFICIENT_DATA` and blocks any future decision pipeline. These states express coverage, not a
+LONG/SHORT vote. See [`ORCHESTRATOR_ARCHITECTURE.md`](ORCHESTRATOR_ARCHITECTURE.md).

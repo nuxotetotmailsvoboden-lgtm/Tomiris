@@ -1,4 +1,4 @@
-name: phase-01-ci
+name: tomiris-phase-02-ci
 on: [push, pull_request]
 jobs:
   test:
@@ -20,6 +20,7 @@ jobs:
       APP_ENV: test
       TOMIRIS_HUB_INGEST_KEY_ID: current
       TOMIRIS_HUB_INGEST_SECRET: 0123456789abcdef0123456789abcdef
+      TOMIRIS_ORCHESTRATOR_AGENT_MASTER_SECRET: command-root-0123456789abcdef0123456789
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -41,3 +42,5 @@ jobs:
         run: pytest -q tests/concurrency
       - name: Notification tests
         run: pytest -q tests/notification
+      - name: Phase 02 end-to-end tests
+        run: pytest -q tests/e2e
