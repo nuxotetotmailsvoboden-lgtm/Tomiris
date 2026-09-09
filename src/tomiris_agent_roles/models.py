@@ -11,6 +11,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from tomiris_common.validation import validate_bounded_json
 from tomiris_core_contracts.orchestration import AnalysisTaskRequest
 from tomiris_core_contracts.signals import Bias
+from tomiris_market_data.capabilities import MarketDataType
+from tomiris_market_data.identity import MarketType
 from tomiris_market_data.models import DataQualityOutcome, MarketDataBundle, Timeframe, require_utc
 
 
@@ -47,6 +49,10 @@ class RoleDataRequirement(BaseModel):
     timeframe: Timeframe
     minimum_bars: Annotated[int, Field(ge=2, le=999)]
     max_data_age_seconds: Annotated[int, Field(ge=1, le=604_800)]
+    data_type: MarketDataType = MarketDataType.OHLCV
+    venue: Annotated[str, Field(pattern=r"^[A-Z][A-Z0-9_-]{1,31}$")] = "BINANCE"
+    market_type: MarketType = MarketType.SPOT
+    preferred_provider: Annotated[str | None, Field(max_length=64)] = None
     required_fields: tuple[str, ...] = ("open", "high", "low", "close", "volume")
 
     @field_validator("required_fields")
@@ -102,7 +108,10 @@ class AgentDefinition(BaseModel):
         instruments = {item.instrument for item in self.required_data}
         if not instruments.issubset(set(self.supported_assets)):
             raise ValueError("required_data instrument must be a supported asset")
-        keys = {(item.instrument, item.timeframe) for item in self.required_data}
+        keys = {
+            (item.instrument, item.timeframe, item.market_type, item.data_type)
+            for item in self.required_data
+        }
         if len(keys) != len(self.required_data):
             raise ValueError("required_data entries must be unique")
         max_evidence = self.limits.get("max_evidence_items", 16)

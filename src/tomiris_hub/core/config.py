@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_ignore_empty=True, extra="ignore")
 
     app_name: str = "TOMIRIS"
-    app_version: str = "0.3.0"
+    app_version: str = "0.4.0"
     app_env: Literal["development", "test", "production"] = "development"
     app_host: str = "127.0.0.1"
     app_port: int = Field(default=8000, ge=1, le=65535)

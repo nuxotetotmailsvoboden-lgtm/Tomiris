@@ -20,6 +20,8 @@ def require_utc(value: datetime) -> datetime:
 def finite_decimal(value: Decimal) -> Decimal:
     if not value.is_finite():
         raise ValueError("numeric values must be finite")
+    if abs(value) > Decimal("1e50"):
+        raise ValueError("numeric value exceeds the domain safety bound")
     return value
 
 

@@ -188,3 +188,14 @@ flowchart LR
 BTC context, ETH technical and SOL technical are pilots, not trading bots. Adding X, Reddit,
 order-flow, macro or gold analysis adds plugins/adapters/configuration—not Hub or Orchestrator
 branches. `AgentSignal != TradeDecision` remains a hard boundary.
+
+## Phase 04 — market-data plane
+
+Phase 04 inserts canonical instruments, capability routing, normalized events, temporal/sequence
+integrity, structured quality, and a verified snapshot manifest between public providers and
+analytical consumers. Spot and derivatives are separate identities. REST bootstrap/history and
+streaming incrementals have separate lifecycles. A corrupt or temporally unsafe source is vetoed
+before orchestration. The plane has no knowledge of specific role names, indicators, Chief,
+Judge, Risk, or execution.
+
+See `MARKET_DATA_PLANE.md`, `ORDER_BOOK_SYNC.md`, and `MARKET_SNAPSHOT_SPEC.md`.

@@ -13,7 +13,9 @@ import httpx
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from tomiris_market_data.cache import InMemoryMarketDataCache, MarketDataCache
+from tomiris_market_data.capabilities import MarketDataType, ProviderCapabilities
 from tomiris_market_data.errors import ProviderError
+from tomiris_market_data.identity import MarketType
 from tomiris_market_data.metrics import MarketDataMetrics
 from tomiris_market_data.models import (
     MarketDataRequest,
@@ -22,6 +24,8 @@ from tomiris_market_data.models import (
     OHLCVBar,
     TickerSnapshot,
 )
+from tomiris_market_data.network_security import HostResolver, SecureHostResolver
+from tomiris_market_data.time import SystemUTCClock, TimeSource
 
 Sleep = Callable[[float], Awaitable[None]]
 RandomValue = Callable[[], float]
@@ -53,6 +57,8 @@ class BinanceProviderSettings(BaseModel):
         if parsed.path not in {"", "/"} or parsed.query or parsed.fragment:
             raise ValueError("Binance base URL must not contain path, query or fragment")
         local = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+        if local and not self.allow_insecure_localhost:
+            raise ValueError("localhost provider endpoint requires explicit dev override")
         if parsed.scheme != "https" and not (self.allow_insecure_localhost and local):
             raise ValueError("Binance public provider requires HTTPS")
         host = parsed.hostname.lower().rstrip(".")
@@ -79,6 +85,8 @@ class BinancePublicMarketDataProvider:
         metrics: MarketDataMetrics | None = None,
         sleep: Sleep = asyncio.sleep,
         random_value: RandomValue = random.random,
+        clock: TimeSource | None = None,
+        resolver: HostResolver | None = None,
     ) -> None:
         self.settings = settings or BinanceProviderSettings()
         self.transport = transport
@@ -86,7 +94,18 @@ class BinancePublicMarketDataProvider:
         self.metrics = metrics or MarketDataMetrics()
         self.sleep = sleep
         self.random_value = random_value
+        self.clock = clock or SystemUTCClock()
+        self.resolver = resolver or SecureHostResolver()
         self._semaphore = asyncio.Semaphore(self.settings.max_concurrency)
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            provider_id=self.name,
+            venue="BINANCE",
+            market_types=(MarketType.SPOT,),
+            data_types=(MarketDataType.OHLCV, MarketDataType.TICKER),
+        )
 
     async def get_ohlcv(self, request: MarketDataRequest) -> MarketDataSeries:
         cache_key = (
@@ -211,6 +230,7 @@ class BinancePublicMarketDataProvider:
         self.metrics.increment("market_data_requests_total", self.name, asset)
         try:
             async with self._semaphore:
+                await self._validate_dns_before_socket_connect()
                 for attempt in range(1, self.settings.max_attempts + 1):
                     try:
                         async with httpx.AsyncClient(
@@ -252,7 +272,7 @@ class BinancePublicMarketDataProvider:
                             raise ProviderError(
                                 "PROVIDER_SCHEMA_ERROR", "provider returned malformed JSON"
                             ) from exc
-                        return payload, datetime.now(UTC)
+                        return payload, self.clock.now()
                     except ProviderError:
                         self.metrics.increment("market_data_failures_total", self.name, asset)
                         raise
@@ -292,3 +312,15 @@ class BinancePublicMarketDataProvider:
             raise ProviderError(code, "public market-data request failed") from last_error
         finally:
             self.metrics.observe_latency(self.name, asset, (time.perf_counter() - started) * 1_000)
+
+    async def _validate_dns_before_socket_connect(self) -> None:
+        if self.transport is not None:
+            return
+        parsed = urlsplit(self.settings.base_url)
+        if parsed.hostname is None:
+            raise ProviderError("PROVIDER_ENDPOINT_INVALID", "provider hostname is missing")
+        await self.resolver.validate(
+            parsed.hostname,
+            parsed.port or 443,
+            allow_non_global=self.settings.allow_insecure_localhost,
+        )

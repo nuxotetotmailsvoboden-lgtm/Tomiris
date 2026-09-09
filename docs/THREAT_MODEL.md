@@ -35,3 +35,19 @@ receive database credentials.
 
 There are deliberately no inbound Telegram commands, exchange credentials, private/account market
 sources, trading decisions or execution functions in this phase.
+
+## Phase 04 data-plane additions
+
+| Threat | Control | Residual risk |
+|---|---|---|
+| Spot/futures cross-contamination | immutable canonical venue/market/symbol identity | bad external metadata still requires provider monitoring |
+| WebSocket SSRF or credential URL | WSS, host/path allowlist, no URL credentials, explicit local override | enforce production egress rules as defense in depth |
+| DNS rebinding/private resolution | resolve before connection and reject every non-global answer | resolver-to-connect race requires network-layer egress filtering |
+| Stream memory exhaustion | bounded messages, queues, event store and depth recovery buffer | sustained overload causes deliberate fail-closed data loss |
+| Sequence corruption | snapshot+delta bridge and previous-ID validation | provider-semantic changes require adapter update |
+| Clock/lookahead contamination | UTC model, server-offset measurement, cutoff and open-candle rejection | host time service remains an operator dependency |
+| Plausible false provider data | provenance, quality, fingerprints and future multi-provider architecture | Phase 04 does not implement provider consensus |
+| Liquidation causal overclaim | provider-semantics label, no attribution layer | downstream documentation must retain uncertainty |
+
+Public market-data configuration exposes no secrets. The HF runtime stays pinned to the certified
+Phase 03 tag during development.

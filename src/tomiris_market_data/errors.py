@@ -13,3 +13,27 @@ class ProviderError(MarketDataError):
 
 class DataValidationError(MarketDataError):
     pass
+
+
+class UnsupportedCapabilityError(MarketDataError):
+    pass
+
+
+class SequenceGapError(MarketDataError):
+    pass
+
+
+class OrderBookOutOfSyncError(MarketDataError):
+    pass
+
+
+class BufferOverflowError(MarketDataError):
+    pass
+
+
+class SnapshotValidationError(MarketDataError):
+    pass
+
+
+class StreamFailureError(MarketDataError):
+    pass

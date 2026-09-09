@@ -21,3 +21,11 @@ Future documented regimes are `TREND_UP`, `TREND_DOWN`, `RANGE`, `BREAKOUT`, `SQ
 `HIGH_VOL`, `LOW_VOL`, `PANIC`, `RISK_ON`, `RISK_OFF`, `LIQUIDATION_EVENT`, `NEWS_EVENT`, `CHAOS`,
 and `UNKNOWN`. Candidate strategies are trend continuation, breakout, mean reversion, liquidation
 reversal, volatility squeeze, news momentum, and order-flow reversal. None is implemented.
+
+## Phase 04 consumption rule
+
+Analytical roles may only consume a snapshot whose manifest is `safe_for_analysis`. Phase 04
+quality evaluates freshness, completeness, sequence, temporal, schema, instrument, cross-stream,
+provider, and clock integrity independently. `INVALID`/`INSUFFICIENT` remain an `ABSTAIN` or
+unavailable-data condition; they do not become `NEUTRAL`. Existing BTC/ETH/SOL v1 roles keep their
+closed-OHLCV inputs and do not acquire derivatives dependencies.

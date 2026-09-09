@@ -60,3 +60,29 @@ review; pre-release CI validates local source without fetching it. BTC/ETH/SOL a
 require this tag or a later compatible certified release. Rebuild and verify the capability/role
 API handshake one Space at a time—simultaneous fleet rollout is unnecessary. Roll back an affected
 Space by restoring its previous certified tag. Do not point a Space at `main` or a feature branch.
+
+## Phase 04 market-data operations
+
+Deterministic CI never calls Binance. To perform an explicit public-data smoke from an approved
+network:
+
+```powershell
+python scripts/run_market_data_smoke.py
+```
+
+The command reads spot/futures public data for BTC/ETH/SOL, measures clock offset, bootstraps books,
+builds a verified manifest, and always reports `trade_execution: DISABLED`. It accepts no API key.
+
+Monitor `market_stream_connections`, `market_stream_reconnects`, `market_stream_failures`,
+`market_stream_events_total`, `market_stream_dropped_total`, `market_sequence_gaps_total`,
+`market_resync_total`, `market_snapshot_build_total`, `market_snapshot_failure_total`,
+`market_quality_invalid_total`, `market_clock_drift_ms`, and `market_data_age_seconds`. Investigate
+unsafe drift and repeated resync immediately. Do not use self-ping, account rotation, or traffic to
+bypass provider quotas.
+
+Phase 04 intentionally adds no migration: recent events are transient/bounded, and existing
+snapshot metadata can retain compact fingerprint/quality references. PostgreSQL must not become a
+tick warehouse. Production should combine application DNS validation with outbound firewall rules.
+
+During development, HF Spaces remain pinned to `v0.3-pilot-agents-pass`. Do not create or deploy a
+`v0.4-market-data-plane-pass` tag until owner review and separate release certification.

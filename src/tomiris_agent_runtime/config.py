@@ -23,7 +23,7 @@ class AgentRuntimeSettings(BaseSettings):
     tomiris_orchestrator_command_secret: SecretStr
     tomiris_runtime_mode: Literal["test", "analytical"] = "test"
     tomiris_agent_definition_path: str | None = None
-    runtime_version: str = "0.3.0"
+    runtime_version: str = "0.4.0"
     command_max_clock_skew_seconds: int = Field(default=60, ge=1, le=600)
     command_nonce_ttl_seconds: int = Field(default=600, ge=60, le=3_600)
     max_task_request_bytes: int = Field(default=65_536, ge=1_024, le=1_048_576)

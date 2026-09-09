@@ -33,3 +33,17 @@
 
 Every failure path is machine-coded. User-controlled validation errors must not escape as an
 unhandled 500.
+
+## Phase 04 integrity paths
+
+| Failure | System response | Recovery |
+|---|---|---|
+| Order-book update ID gap | book `OUT_OF_SYNC`, quality invalid | fresh REST snapshot plus compatible buffered deltas |
+| Stream disconnect | close resource, `RECONNECTING`, old book unsafe | bounded reconnect followed by resync |
+| Queue/buffer bound exceeded | drop/clear bounded state and fail closed | reduce load or resnapshot; never grow RAM indefinitely |
+| Clock offset degraded/unsafe | degraded quality / hard snapshot veto | restore host time sync and remeasure |
+| Snapshot component after cutoff | exclude from selection | wait for next explicitly cut snapshot |
+| Required component missing/stale | insufficient/invalid manifest | consumer unavailable; do not dispatch analysis |
+| Optional component missing | degraded manifest | proceed only where declared policy permits |
+| Futures metadata mismatch | provider schema/identity error | refresh reviewed metadata and adapter |
+| Private DNS answer | abort before socket connect | investigate DNS/egress; no retry to the address |

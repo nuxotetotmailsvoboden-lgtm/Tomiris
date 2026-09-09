@@ -1,4 +1,4 @@
-name: tomiris-phase-03-ci
+name: tomiris-phase-04-ci
 on: [push, pull_request]
 jobs:
   test:
@@ -37,27 +37,50 @@ jobs:
       - run: ruff format --check .
       - run: mypy src
       - run: bandit -q -r src
-      - name: Phase 01 and Phase 02 regression
+      - name: Wheel build
+        run: python -m pip wheel --no-deps . -w dist
+      - name: Phase 01 core regression
         run: >-
-          pytest -q tests
-          --ignore=tests/unit/test_phase03_features.py
-          --ignore=tests/unit/test_phase03_market_data.py
-          --ignore=tests/unit/test_phase03_role_framework.py
-          --ignore=tests/unit/test_phase03_release_certification.py
-          --ignore=tests/unit/test_phase03_runtime.py
-          --ignore=tests/security/test_phase03_provider_security.py
-          --ignore=tests/integration/test_phase03_binance_provider.py
-          --ignore=tests/integration/test_phase03_signal_lineage.py
-          --ignore=tests/e2e/test_phase03_pilot_e2e.py
+          pytest -q
+          tests/concurrency/test_nonce_concurrency.py
+          tests/integration/test_database_fail_closed.py
+          tests/integration/test_restart_replay.py
+          tests/integration/test_signal_ingestion.py
+          tests/security/test_api_authentication_matrix.py
+          tests/security/test_hmac_authentication.py
+          tests/unit/test_config.py
+          tests/unit/test_request_body.py
+          tests/unit/test_schemas.py
+          tests/unit/test_security.py
+      - name: Phase 02 regression
+        run: >-
+          pytest -q
+          tests/unit/test_phase02_dispatch_client.py
+          tests/unit/test_phase02_runtime.py
+          tests/security/test_phase02_security.py
+          tests/integration/test_phase02_health.py
+          tests/integration/test_phase02_orchestration.py
+          tests/integration/test_phase02_recovery.py
+          tests/integration/test_phase02_signal_lineage.py
+          tests/concurrency/test_phase02_dispatch_leases.py
+          tests/e2e/test_phase02_e2e.py
       - name: Phase 03 unit tests
-        run: pytest -q tests/unit
+        run: pytest -q tests/unit/test_phase03_*.py
       - name: Phase 03 security tests
-        run: pytest -q tests/security
+        run: pytest -q tests/security/test_phase03_provider_security.py
       - name: Phase 03 PostgreSQL integration tests
-        run: pytest -q tests/integration
-      - name: Phase 03 PostgreSQL concurrency tests
-        run: pytest -q tests/concurrency
+        run: pytest -q tests/integration/test_phase03_*.py
       - name: Notification tests
         run: pytest -q tests/notification
       - name: Phase 03 end-to-end tests
-        run: pytest -q tests/e2e
+        run: pytest -q tests/e2e/test_phase03_pilot_e2e.py
+      - name: Phase 04 unit tests
+        run: pytest -q tests/unit/test_phase04_*.py
+      - name: Phase 04 security tests
+        run: pytest -q tests/security/test_phase04_*.py
+      - name: Phase 04 integration tests
+        run: pytest -q tests/integration/test_phase04_*.py
+      - name: Phase 04 concurrency tests
+        run: pytest -q tests/concurrency/test_phase04_*.py
+      - name: Phase 04 end-to-end tests
+        run: pytest -q tests/e2e/test_phase04_*.py

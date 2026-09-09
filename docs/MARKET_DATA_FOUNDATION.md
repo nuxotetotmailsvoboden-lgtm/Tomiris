@@ -26,3 +26,14 @@ candles remain transient; Phase 03 does not create a PostgreSQL candle warehouse
 
 The validator also requires the provider series cutoff to match the request cutoff exactly. This
 prevents a seemingly valid series from being attached to the wrong replay or analytical cycle.
+
+## Phase 04 additive extension
+
+The Phase 03 `MarketDataProvider` and `MarketDataRequest` remain valid for pilot OHLCV roles.
+Phase 04 adds a capability-aware registry and adapters that wrap closed `MarketDataSeries` objects
+in canonical normalized events. New consumers request explicit market/data types; unsupported
+capabilities fail during planning rather than at provider runtime.
+
+The public USDT-M provider, stream normalizer, clock-drift monitor, bounded recent store,
+order-book synchronizer, quality dimensions, and verified snapshot builder are specified in the
+Phase 04 market-data documents. No exchange credentials or account endpoints were added.

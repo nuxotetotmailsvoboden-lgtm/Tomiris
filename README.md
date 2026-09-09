@@ -1,9 +1,10 @@
-# TOMIRIS — Phase 03 Versioned Analytical Platform
+# TOMIRIS — Phase 04 Market Data Plane
 
-Phase 03 extends the secure Hub and durable Orchestrator with plugin-based analytical roles,
-provider-neutral public market data and deterministic versioned features. The three pilots are BTC
-market context, ETH technical and SOL technical. They produce observations only: an `AgentSignal`
-is never a trade decision, order, position, leverage, stop or take-profit instruction.
+Phase 04 adds canonical spot/futures identity, public derivatives contracts, normalized streaming,
+temporal and sequence integrity, bounded event handling, and verified market snapshots to the
+secure Hub, durable Orchestrator, and Phase 03 pilot roles. The three pilots remain BTC market
+context, ETH technical and SOL technical. They produce observations only: an `AgentSignal` is never
+a trade decision, order, position, leverage, stop or take-profit instruction.
 
 ## Windows quick start
 
@@ -49,6 +50,7 @@ Telegram remains disabled unless `TELEGRAM_ENABLED=true`, `TELEGRAM_BOT_TOKEN`, 
 
 For the implemented boundaries, start with
 [`docs/ANALYTICAL_AGENT_FRAMEWORK.md`](docs/ANALYTICAL_AGENT_FRAMEWORK.md),
-[`docs/MARKET_DATA_FOUNDATION.md`](docs/MARKET_DATA_FOUNDATION.md) and
+[`docs/MARKET_DATA_PLANE.md`](docs/MARKET_DATA_PLANE.md),
+[`docs/MARKET_SNAPSHOT_SPEC.md`](docs/MARKET_SNAPSHOT_SPEC.md) and
 [`docs/MASTER_ARCHITECTURE.md`](docs/MASTER_ARCHITECTURE.md). Phase 03 deliberately does not use
-LLMs, make trade decisions, backtest, learn, access accounts or execute orders.
+LLMs, and Phase 04 does not make trade decisions, learn, access accounts or execute orders.
